@@ -1,1 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modul 02 + Shadow</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
+
+    // Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x202020);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 3, 7);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0x404040); // soft light
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(3, 5, 5);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 20;
+    scene.add(ambientLight, dirLight);
+
+    // Texture
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('https://threejs.org/examples/textures/brick_diffuse.jpg');
+
+    // Cube: Basic + Texture (diganti Standard karena Basic tidak bisa shadow)
+    const cubeMaterial = new THREE.MeshStandardMaterial({ map: texture });
+    const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), cubeMaterial);
+    cube.position.set(-3, 0.5, 0);
+    cube.castShadow = true;
+    scene.add(cube);
+
+    // Sphere: Phong + Emissive + Texture + Shininess 30
+    const sphereMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
+      emissive: 0x222222,
+      shininess: 30
+    });
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.75, 32, 32), sphereMaterial);
+    sphere.position.set(0, 0.75, 0);
+    sphere.castShadow = true;
+    scene.add(sphere);
+
+    // Pyramid: Phong + Texture + Shininess 90
+    const pyramidGeometry = new THREE.ConeGeometry(1, 1.5, 4);
+    const pyramidMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
+      shininess: 90
+    });
+    const pyramid = new THREE.Mesh(pyramidGeometry, pyramidMaterial);
+    pyramid.position.set(3, 0.75, 0);
+    pyramid.castShadow = true;
+    scene.add(pyramid);
+
+    // Plane: Basic + Texture (diganti Standard biar bisa receive shadow)
+    const planeMaterial = new THREE.MeshStandardMaterial({ map: texture });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), planeMaterial);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = 0;
+    plane.receiveShadow = true;
+    scene.add(plane);
+
+    // Animate
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.y += 0.01;
+      sphere.rotation.y += 0.01;
+      pyramid.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
 
